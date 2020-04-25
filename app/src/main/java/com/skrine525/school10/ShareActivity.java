@@ -39,18 +39,40 @@ public class ShareActivity extends AppCompatActivity {
     Spinner subjectSpinner, teacherSpinner;
     TextView status_textView;
 
+    String UserData_Name, UserData_Surname, UserData_Email = null;
+    long UserData_Class = 0;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        String Name = sharedPreferences.getString("Name", "");
+        String Surname = sharedPreferences.getString("Surname", "");
+        String Email = sharedPreferences.getString("Surname", "");
+        long Class = sharedPreferences.getLong("Class", 0);
+
+        //  Проверка на Email временно удалена
+        if(Name.equals("") || Surname.equals("") || /*Email.equals("") || */Class == 0){
+            Intent intent = new Intent(ShareActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        }
+        else{
+            if(UserData_Name == null)
+                UserData_Name = Name;
+            if(UserData_Surname == null)
+                UserData_Surname = Surname;
+            if(UserData_Email == null)
+                UserData_Email = Email;
+            if(UserData_Class == 0)
+                UserData_Class = Class;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
         sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE);
-        final String UserData_Name = sharedPreferences.getString("Name", "");
-        final String UserData_Surname = sharedPreferences.getString("Surname", "");
-        if(UserData_Name.equals("") || UserData_Surname.equals("")){
-            Intent intent = new Intent(ShareActivity.this, RegisterActivity.class);
-            startActivity(intent);
-        }
-        final long UserData_Class = sharedPreferences.getLong("Class", 0);
 
         Intent intent = getIntent();
         final String action = intent.getAction();
@@ -273,6 +295,9 @@ public class ShareActivity extends AppCompatActivity {
 
         private File downloadContentToCache(Uri uri, String filename) {
             File file = new File(getApplicationContext().getCacheDir(), filename);
+            if(file.exists())
+                file.delete();
+
             try{
                 InputStream inputStream = getContentResolver().openInputStream(uri);
                 FileOutputStream outputStream = new FileOutputStream(file);
