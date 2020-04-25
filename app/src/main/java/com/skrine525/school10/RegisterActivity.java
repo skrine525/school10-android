@@ -31,10 +31,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE);
         String User_Name = sharedPreferences.getString("Name", "");
-        if(!User_Name.equals("")){
-            String[] UsernameData = User_Name.split(" ");
-            userNameEditText.setText(UsernameData[0]);
-            userSurnameEditText.setText(UsernameData[1]);
+        String User_Surname = sharedPreferences.getString("Surname", "");
+        if(!User_Name.equals("") || !User_Surname.equals("")){
+            userNameEditText.setText(User_Name);
+            userSurnameEditText.setText(User_Surname);
             userEmailEditText.setText(sharedPreferences.getString("Email", ""));
             userClassSpinner.setSelection((int) sharedPreferences.getLong("Class", 0));
         }
@@ -53,10 +53,12 @@ public class RegisterActivity extends AppCompatActivity {
                 else{
                     Editor editor = sharedPreferences.edit();
                     String formatedName = userNameEditText.getText().toString().replaceAll(" ", "");
+                    formatedName = formatedName.substring(0, 1).toUpperCase()+formatedName.substring(1).toLowerCase();
                     String formatedSurname = userSurnameEditText.getText().toString().replaceAll(" ", "");
-                    String User_Name = formatedName.substring(0, 1).toUpperCase()+formatedName.substring(1).toLowerCase()
-                            +" "+formatedSurname.substring(0, 1).toUpperCase()+formatedSurname.substring(1).toLowerCase();
-                    editor.putString("Name", User_Name);
+                    formatedSurname = formatedSurname.substring(0, 1).toUpperCase()+formatedSurname.substring(1).toLowerCase();
+
+                    editor.putString("Name", formatedName);
+                    editor.putString("Surname", formatedSurname);
                     editor.putString("Email", userEmailEditText.getText().toString());
                     editor.putLong("Class", userClassSpinner.getSelectedItemId());
                     if(editor.commit()){

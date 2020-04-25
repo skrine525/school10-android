@@ -2,11 +2,28 @@
     <string name="app_name">Школа №10</string>
     <string name="hint_name">Имя</string>
     <string name="hint_surname">Фамилия</string>
-    <string name="hint_email">Email</string>
+    <string name="hint_email">Email (Возможно будет убран)</string>
     <string name="text_save">Сохранить</string>
     <string name="text_exit">Выход</string>
     <string name="text_send">Отправить</string>
     <string name="text_options">Настройки</string>
+    <string name="text_update">Обновить</string>
+    <string name="text_select_date">Выбрать дату работы</string>
+    <string-array name="months">
+        <item>Месяц</item>
+        <item>Январь</item>
+        <item>Февраль</item>
+        <item>Март</item>
+        <item>Апрель</item>
+        <item>Май</item>
+        <item>Июнь</item>
+        <item>Июлю</item>
+        <item>Август</item>
+        <item>Сентябрь</item>
+        <item>Октябрь</item>
+        <item>Ноябрь</item>
+        <item>Декабрь</item>
+    </string-array>
     <string-array name="classes">
         <item>Выберите свой класс</item>
         <item>1 класс</item>
@@ -23,8 +40,50 @@
     </string-array>
     <string-array name="subjects">
         <item>Выберите предмет</item>
-        <item>Русский язык</item>
         <item>Математика</item>
+        <item>Алгебра</item>
+        <item>Геометрия</item>
+        <item>Русский язык</item>
+        <item>Английский язык</item>
+        <item>Обществознание</item>
+        <item>Информатика и ИКТ</item>
         <item>Физика</item>
+        <item>Химия</item>
+        <item>Биология</item>
+        <item>Литература</item>
+        <item>ОБЖ</item>
+        <item>Физкультура</item>
+        <item>География</item>
+        <item>История</item>
+        <item>ИЗО</item>
+        <item>МХК</item>
+        <item>Музыка</item>
+        <item>Технология</item>
+    </string-array>
+    <string-array name="teachers">
+        <item>Выберите учителя</item>
+        <item>Аракелян В. С.</item>
+        <item>Ахмедова Е. В.</item>
+        <item>Бурнатова Л. А.</item>
+        <item>Быкова Н. Д.</item>
+        <item>Вовк Е. А.</item>
+        <item>Гречка А. С.</item>
+        <item>Ершова О. Е.</item>
+        <item>Козырева Е. В.</item>
+        <item>Лабанова Е. Г.</item>
+        <item>Лаврентюк Т. В.</item>
+        <item>Остапенко Р. В.</item>
+        <item>Понаморева З. В.</item>
+        <item>Попиль А. Л.</item>
+        <item>Попиль Е. Н.</item>
+        <item>Порядина Н. Я.</item>
+        <item>Рассказова Г. А.</item>
+        <item>Сазонова Н. Н.</item>
+        <item>Семилетова С. В.</item>
+        <item>Склярова А. В.</item>
+        <item>Хоришко Г. Г.</item>
+        <item>Чернова С. В.</item>
+        <item>Шульцева Е. А.</item>
+        <item>Ярмощук О. М.</item>
     </string-array>
 </resources>
