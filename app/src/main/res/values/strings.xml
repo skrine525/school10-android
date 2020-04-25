@@ -2,7 +2,7 @@
     <string name="app_name">Школа №10</string>
     <string name="hint_name">Имя</string>
     <string name="hint_surname">Фамилия</string>
-    <string name="hint_email">Email (Возможно будет убран)</string>
+    <string name="hint_email">Email (Необязательно)</string>
     <string name="text_save">Сохранить</string>
     <string name="text_exit">Выход</string>
     <string name="text_send">Отправить</string>

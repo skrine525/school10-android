@@ -46,8 +46,10 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Укажите имя!", Toast.LENGTH_SHORT).show();
                 else if (userSurnameEditText.getText().toString().equals(""))
                     Toast.makeText(getApplicationContext(), "Укажите фамилию!", Toast.LENGTH_SHORT).show();
+                /* Временно убрано
                 else if (userEmailEditText.getText().toString().equals(""))
                     Toast.makeText(getApplicationContext(), "Укажите Email!", Toast.LENGTH_SHORT).show();
+                 */
                 else if (userClassSpinner.getSelectedItemId() == 0)
                     Toast.makeText(getApplicationContext(), "Выберите класс!", Toast.LENGTH_SHORT).show();
                 else{
