@@ -15,6 +15,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONException;
@@ -41,32 +42,6 @@ public class ShareActivity extends AppCompatActivity {
 
     String UserData_Name, UserData_Surname, UserData_Email = null;
     long UserData_Class = 0;
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        String Name = sharedPreferences.getString("Name", "");
-        String Surname = sharedPreferences.getString("Surname", "");
-        String Email = sharedPreferences.getString("Surname", "");
-        long Class = sharedPreferences.getLong("Class", 0);
-
-        //  Проверка на Email временно удалена
-        if(Name.equals("") || Surname.equals("") || /*Email.equals("") || */Class == 0){
-            Intent intent = new Intent(ShareActivity.this, RegisterActivity.class);
-            startActivity(intent);
-        }
-        else{
-            if(UserData_Name == null)
-                UserData_Name = Name;
-            if(UserData_Surname == null)
-                UserData_Surname = Surname;
-            if(UserData_Email == null)
-                UserData_Email = Email;
-            if(UserData_Class == 0)
-                UserData_Class = Class;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -160,6 +135,32 @@ public class ShareActivity extends AppCompatActivity {
                 Toast.makeText(this, "Контент не выбран!", Toast.LENGTH_SHORT).show();
                 finishAffinity();
             }
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        String Name = sharedPreferences.getString("Name", "");
+        String Surname = sharedPreferences.getString("Surname", "");
+        String Email = sharedPreferences.getString("Surname", "");
+        long Class = sharedPreferences.getLong("Class", 0);
+
+        //  Проверка на Email временно удалена
+        if(Name.equals("") || Surname.equals("") || /*Email.equals("") || */Class == 0){
+            Intent intent = new Intent(ShareActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        }
+        else{
+            if(UserData_Name == null)
+                UserData_Name = Name;
+            if(UserData_Surname == null)
+                UserData_Surname = Surname;
+            if(UserData_Email == null)
+                UserData_Email = Email;
+            if(UserData_Class == 0)
+                UserData_Class = Class;
         }
     }
 
