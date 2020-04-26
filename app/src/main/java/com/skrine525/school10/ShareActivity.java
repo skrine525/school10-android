@@ -1,6 +1,8 @@
 package com.skrine525.school10;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -15,7 +17,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONException;
@@ -27,6 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import android.text.format.Time;
+
+import com.skrine525.school10.utils.*;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -56,6 +59,40 @@ public class ShareActivity extends AppCompatActivity {
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             final Uri contentUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             if (contentUri != null) {
+                int contentLength = 0;
+                try {
+                    contentLength = getContentResolver().openInputStream(contentUri).available();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                
+                if(contentLength > 20971520){ // Если размер контента больше 20 МБ
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ShareActivity.this);
+                    builder.setTitle("Ошибка");
+                    builder.setMessage("Максимальный размер содержимого - 20 МБ");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("Закрыть", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
+                    builder.create().show();
+                }
+                else if(contentLength == 0){ // Если размер контента равен 0
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ShareActivity.this);
+                    builder.setTitle("Ошибка");
+                    builder.setMessage("Содержимое пустое");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("Закрыть", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
+                    builder.create().show();
+                }
+
                 setContentView(R.layout.activity_share);
 
                 shareButton = findViewById(R.id.button_Share);
@@ -238,8 +275,13 @@ public class ShareActivity extends AppCompatActivity {
                     break;
                 }
                 if(href != null){
-                    publishProgress("Загрузка файла на сервер..."); // Оповещение через Status TextView
-                    Response response = client.uploadFile(href, file);
+                    Response response = client.uploadFile(href, file, new CountingFileRequestBody.ProgressListener() {
+                        @Override
+                        public void onProgress(long bytesWritten, long contentLength) {
+                            int progress = (int) (((Number) bytesWritten).floatValue() / ((Number) contentLength).floatValue() * 100);
+                            publishProgress("Загрузка файла на сервер... " + progress + "%"); // Оповещение через Status TextView
+                        }
+                    });
 
                     switch (response.code()){
                         case 201:

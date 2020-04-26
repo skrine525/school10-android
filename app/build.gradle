@@ -8,8 +8,8 @@ android {
         applicationId "com.skrine525.school10"
         minSdkVersion 22
         targetSdkVersion 29
-        versionCode 1
-        versionName "v0.1 (Beta)"
+        versionCode 2
+        versionName "v0.1.1 (Beta)"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

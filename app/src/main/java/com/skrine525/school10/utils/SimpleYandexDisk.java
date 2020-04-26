@@ -1,4 +1,4 @@
-package com.skrine525.school10;
+package com.skrine525.school10.utils;
 
 import android.os.FileUtils;
 
@@ -32,14 +32,16 @@ public class SimpleYandexDisk {
         return client.newCall(request).execute();
     }
 
-    public Response uploadFile(String href, File file) throws IOException {
+    public Response uploadFile(String href, File file, CountingFileRequestBody.ProgressListener listener) throws IOException {
+        /*
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
                 .addFormDataPart("file", "name", RequestBody.create(MediaType.parse("application/*"), file))
                 .build();
+         */
+        CountingFileRequestBody countingFileRequestBody = new CountingFileRequestBody(file, "application/*", listener);
         Request request =  new Request.Builder().url(href)
-                .put(requestBody)
+                .put(countingFileRequestBody)
                 .build();
-        client.newCall(request).execute();
         return client.newCall(request).execute();
     }
 
