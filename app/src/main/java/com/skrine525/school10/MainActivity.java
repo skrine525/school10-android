@@ -1,14 +1,11 @@
 package com.skrine525.school10;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
-import android.Manifest;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +14,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -45,15 +41,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Отрисовываем Layout
         setContentView(R.layout.activity_main);
 
+        // Получаем объекты элементов интерфейса
         sendButton = findViewById(R.id.button_Send);
         optionsButton = findViewById(R.id.button_Options);
         exitButton = findViewById(R.id.button_Exit);
         updateButton = findViewById(R.id.button_Update);
 
+        // Получаем SharedPreferences хранилище
         sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE);
+
         if(sharedPreferences.getString("Name", "").equals("")){
+            // Если в SharedPreferences нет параметра Name, то запускаем Activity регистрации
             Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
             startActivity(intent);
         }
@@ -61,8 +63,10 @@ public class MainActivity extends AppCompatActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ShareActivity.class);
-                startActivity(intent);
+                Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                getContentIntent.setType("*/*");
+                startActivityForResult(getContentIntent, 0);
             }
         });
 
@@ -94,13 +98,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class DownloadApplicationUpdate extends AsyncTask{
-        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK){
+            switch (requestCode){
+                case 0:
+                    Uri contentUri = data.getData();
+                    String contentType = getContentResolver().getType(contentUri);
+
+                    Intent shareIntent = new Intent(this, ShareActivity.class);
+                    shareIntent.setAction(Intent.ACTION_VIEW);
+                    shareIntent.setDataAndType(contentUri, contentType);
+                    startActivity(shareIntent);
+                    break;
+            }
+        }
+        else if(resultCode == RESULT_CANCELED)
+            Toast.makeText(getApplicationContext(), "Вы не выбрали файл", Toast.LENGTH_SHORT).show();
+    }
+
+    // Класс для скачивания обновления с сервера
+    private class ApplicationUpdater extends AsyncTask{
+        ProgressDialog progressDialog;
+        String href = "";
+
+        ApplicationUpdater(String href){
+            this.href = href;
+        }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
+            // Настраиваем ProgressDialog
+            progressDialog = new ProgressDialog(MainActivity.this);
             progressDialog.setMessage("Загрузка...");
             progressDialog.setCancelable(false);
             progressDialog.setMax(100);
@@ -110,10 +143,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Object doInBackground(Object[] objects) {
-            String href = (String) objects[0];
-
+            // Скачиваем APK-пакет
             File apkFile = null;
-
             try {
                 URL url = new URL(href);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -141,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 while ((bufferLength = inputStream.read(buffer)) >0){
                     fileOutputStream.write(buffer, 0, bufferLength);
                     downloadedSize += bufferLength;
-                    publishProgress(downloadedSize, totalSize);
+                    publishProgress(downloadedSize, totalSize);         // Выводим процесс загрузки в ProgressDialog
                 }
 
                 fileOutputStream.close();
@@ -152,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+            // Возвращаем File объект скачанного APK-пакета
             return apkFile;
         }
 
@@ -159,27 +191,31 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(Object[] values) {
             super.onProgressUpdate(values);
 
-            int progress = (int) (((Number) values[0]).floatValue() / ((Number) values[1]).floatValue() * 100);
-            progressDialog.setProgress(progress);
+            // Выводим процесс загрузки в ProgressDialog
+            int progress = (int) (((Number) values[0]).floatValue() / ((Number) values[1]).floatValue() * 100);         // Расчитываем прогресс в процентах
+            progressDialog.setProgress(progress);                                                                       // Обновляем ProgressDialog
         }
 
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
 
-            progressDialog.cancel();
+            progressDialog.cancel();                                                                    // Закрываем ProgressDialog
 
             if(o != null){
-                File apkFile = (File) o;
-                Intent installIntent = new Intent(Intent.ACTION_VIEW);
-                Uri apkURI = FileProvider.getUriForFile(MainActivity.this, getApplicationContext().getPackageName() + ".provider", apkFile);
+                // Если o не пуст, то устанавливаем пакет
+                File apkFile = (File) o;                                                                // Преобразуем объект в File
+                Intent installIntent = new Intent(Intent.ACTION_VIEW);                                  // Создаем новый Intent
+                Uri apkURI = FileProvider.getUriForFile(MainActivity.this,
+                        getApplicationContext().getPackageName() + ".provider", apkFile);      // Получаем URI APK-пакета
                 Log.d("Provider URI", apkURI.toString());
-                installIntent.setData(apkURI);
-                installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                installIntent.setData(apkURI);                                                          // Устанавливаем URI в качестве данных Intent
+                installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);                          // Устанавливаем флаг на разрешение чтения URI
 
-                startActivity(installIntent);
+                startActivity(installIntent);                                                           // Запускаем Activity установки
             }
             else
+                // Инче выводим сообщение об ошибке
                 Toast.makeText(getApplicationContext(), "Не удалось скачать обновление!", Toast.LENGTH_SHORT).show();
         }
     }
@@ -187,29 +223,25 @@ public class MainActivity extends AppCompatActivity {
     private class CheckForUpdatesHandler extends AsyncTask{
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
         protected Object doInBackground(Object[] objects) {
-            int currentVersionCode = (int) objects[0];
+            // Получаем входные данные из объектов
+            int currentVersionCode = (int) objects[0];          // Текущая версия пакета
 
+            // Делаем запрос на сервер для поиска новой версии
             OkHttpClient client = new OkHttpClient();
-
             try {
                 Request request  = new Request.Builder().url("http://radabot.ddns.net/school10/app/meta.json").build();
                 Response response = client.newCall(request).execute();
                 JSONObject object = new JSONObject(response.body().string());
                 int versionCode = object.getInt("versionCode");
                 if(versionCode > currentVersionCode)
+                    // Если нашли версию, то возвращаем JSONObject ответа
                     return object;
-
-                return null;
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
 
+            // Возвращаем null, чтобы ничего не делать
             return null;
         }
 
@@ -218,47 +250,56 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(o);
 
             if(o != null){
-                JSONObject jsonObject = (JSONObject) o;
+                // Если o не пусто, то обрабатываем обновление приложения
+                JSONObject jsonObject = (JSONObject) o; // Преобразуем объект в JSONObject
 
-                final int versionCode;
+                // Переменные, хранящие информацию об обновлении
                 String versionName = "";
                 String description = "";
                 String href = "";
+
+                // Пытаемся получить информацию об обновлении из JSONObject
                 try {
-                    versionCode = jsonObject.getInt("versionCode");
                     versionName = jsonObject.getString("versionName");
                     description = jsonObject.getString("description");
                     href = jsonObject.getString("href");
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    return;
+                    return;                                                     // Если ловим исключение, то просто выходим из метода
                 }
-                final String finalHref = href;
+                final String finalHref = href;                                  // Временная final переменная href
 
-                Toast.makeText(getApplicationContext(), "Обнаружена новая версия приложения", Toast.LENGTH_SHORT).show();
-                updateButton.setVisibility(View.VISIBLE);
+                Toast.makeText(getApplicationContext(), "Обнаружена новая версия приложения", Toast.LENGTH_SHORT).show();           // Выводим сообщение об обновлении
+                updateButton.setVisibility(View.VISIBLE);                                                                                // Делаем кнопку Обновить видимой
 
+                // Создаем AlertDialog обновления
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Обновление " + versionName);
                 builder.setMessage(description);
                 builder.setCancelable(false);
+
+                // Устанавливаем кнопку Загрузить для AlertDialog
                 builder.setPositiveButton("Загрузить", new AlertDialog.OnClickListener(){
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        DownloadApplicationUpdate downloadApplicationUpdate = new DownloadApplicationUpdate();
-                        downloadApplicationUpdate.execute(finalHref);
+                        // Загружаем обновление
+                        ApplicationUpdater applicationUpdater = new ApplicationUpdater(finalHref);
+                        applicationUpdater.execute();
                     }
                 });
 
+                // Устанавливаем кнопку Отмена для AlertDialog
                 builder.setNegativeButton("Отмена", new AlertDialog.OnClickListener(){
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        // Закрываем AlertDialog
                         dialog.cancel();
                     }
                 });
 
+                // Устанавливаем обработчик нажатий для кнопки Обновить
                 updateButton.setOnClickListener(new View.OnClickListener() {
 
                     @Override

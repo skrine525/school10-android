@@ -1,16 +1,9 @@
 package com.skrine525.school10.utils;
 
-import android.os.FileUtils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -33,11 +26,6 @@ public class SimpleYandexDisk {
     }
 
     public Response uploadFile(String href, File file, CountingFileRequestBody.ProgressListener listener) throws IOException {
-        /*
-        RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("file", "name", RequestBody.create(MediaType.parse("application/*"), file))
-                .build();
-         */
         CountingFileRequestBody countingFileRequestBody = new CountingFileRequestBody(file, "application/*", listener);
         Request request =  new Request.Builder().url(href)
                 .put(countingFileRequestBody)
