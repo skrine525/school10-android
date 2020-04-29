@@ -8,10 +8,12 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +33,7 @@ import java.io.InputStream;
 
 import android.text.format.Time;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.skrine525.school10.utils.*;
 
 import okhttp3.OkHttpClient;
@@ -40,10 +43,11 @@ import okhttp3.Response;
 public class ShareActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     Button shareButton, dateButton;
-    String dateOfWork = null;
-    Time dateOfWorkTime = null;
     Spinner subjectSpinner, teacherSpinner;
     TextView statusTextView, filenameTextView;
+    ProgressBar statusProgressBar;
+    String dateOfWork = null;
+    Time dateOfWorkTime = null;
     Uri contentUri = null;
 
     String UserData_Name, UserData_Surname = null;
@@ -119,6 +123,7 @@ public class ShareActivity extends AppCompatActivity {
             teacherSpinner = findViewById(R.id.spinner_Teacher);
             statusTextView = findViewById(R.id.textView_Status);
             filenameTextView = findViewById(R.id.textView_Filename);
+            statusProgressBar = findViewById(R.id.progressBar_Status);
 
             // Устанавливаем название контента в TextView
             filenameTextView.setText(documentFile.getName());
@@ -127,15 +132,27 @@ public class ShareActivity extends AppCompatActivity {
             shareButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(teacherSpinner.getSelectedItemPosition() == 0)
+                    if(teacherSpinner.getSelectedItemPosition() == 0) {
                         // Если Учитель не выбран, то выводим сообщение
-                        Toast.makeText(getApplicationContext(), "Выберите учителя!", Toast.LENGTH_SHORT).show();
-                    else if(subjectSpinner.getSelectedItemPosition() == 0)
+                        if(Build.VERSION.SDK_INT >= 25)
+                            Snackbar.make(shareButton, "Выберите учителя!", Snackbar.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getApplicationContext(), "Выберите учителя!", Toast.LENGTH_SHORT).show();
+                    }
+                    else if(subjectSpinner.getSelectedItemPosition() == 0) {
                         // Если Предмет не выбран, то выводим сообщение
-                        Toast.makeText(getApplicationContext(), "Выберите предмет!", Toast.LENGTH_SHORT).show();
-                    else if(dateOfWork == null)
+                        if(Build.VERSION.SDK_INT >= 25)
+                            Snackbar.make(shareButton, "Выберите предмет!", Snackbar.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getApplicationContext(), "Выберите предмет!", Toast.LENGTH_SHORT).show();
+                    }
+                    else if(dateOfWork == null) {
                         // Если Дата Работы не выбрана, то выводим сообщение
-                        Toast.makeText(getApplicationContext(), "Выберите дату работы!", Toast.LENGTH_SHORT).show();
+                        if(Build.VERSION.SDK_INT >= 25)
+                            Snackbar.make(shareButton, "Выберите дату работы!", Snackbar.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getApplicationContext(), "Выберите дату работы!", Toast.LENGTH_SHORT).show();
+                    }
                     else{
                         // Иначе запускаем AsynkTask загрузки контента на сервер
                         SendContentToServer sender = new SendContentToServer();
@@ -240,8 +257,13 @@ public class ShareActivity extends AppCompatActivity {
             subjectSpinner.setEnabled(false);                                                   // Отключаем выбор Предмета
             dateButton.setEnabled(false);                                                       // Отключаем кнопку Выбрать Дату Работы
             shareButton.setEnabled(false);                                                      // Отключаем кнопку Отправить
-            Toast.makeText(getApplicationContext(),
-                    "Началась загрузка файла на сервер.", Toast.LENGTH_SHORT).show();      // Выводим сообщение
+            // Выводим сообщение
+            if(Build.VERSION.SDK_INT >= 25)
+                Snackbar.make(shareButton, "Началась загрузка файла на сервер.",
+                        Snackbar.LENGTH_SHORT).show();
+            else
+                Toast.makeText(getApplicationContext(),
+                        "Началась загрузка файла на сервер.", Toast.LENGTH_SHORT).show();
             statusTextView.setText("");                                                         // Очищаем Status TextView
         }
 
@@ -267,7 +289,7 @@ public class ShareActivity extends AppCompatActivity {
             SimpleYandexDisk client = new SimpleYandexDisk(getResources().getString(R.string.yandex_api_token));
 
             try{
-                publishProgress("Получение текущей даты с сервера...");     // Оповещение через Status TextView
+                publishProgress(0, "Получение текущей даты с сервера...");     // Оповещение через Status TextView
                 String currentDate = getCurrentDate();                              // Получаем текущую дату с сервера
 
                 Resources resources = getResources();                               // Получаем ресурсы приложения
@@ -288,7 +310,7 @@ public class ShareActivity extends AppCompatActivity {
                         path += "/" + pathArray[i];
                     }
 
-                    publishProgress("Запрос на загрузку файла...");     // Оповещение через Status TextView
+                    publishProgress(0, "Запрос на загрузку файла...");     // Оповещение через Status TextView
 
                     // Делаем запрос на загрузку файла на сервер
                     Response response = client.getUploadServerURL(path);
@@ -303,7 +325,7 @@ public class ShareActivity extends AppCompatActivity {
                             String new_path = "Школа 10";
                             for(int i = 0; i < pathArray.length - 1; i++){
                                 new_path += "/" + pathArray[i];
-                                publishProgress("Создание каталога "+(i+1)+"...");  // Оповещение через Status TextView
+                                publishProgress(0, "Создание каталога "+(i+1)+"...");  // Оповещение через Status TextView
                                 client.makeDirectory(new_path);
                             }
                             continue;
@@ -323,12 +345,13 @@ public class ShareActivity extends AppCompatActivity {
                 }
                 if(href != null){
                     // Если href получена, то загружаем файл на сервер
+                    publishProgress(0, "Загрузка файла на сервер... ");
                     Response response = client.uploadFile(href, file, new CountingFileRequestBody.ProgressListener() {
                         @Override
                         public void onProgress(long bytesWritten, long contentLength) {
                             // Выводим прогресс загрузки в Status TextView
                             int progress = (int) (((Number) bytesWritten).floatValue() / ((Number) contentLength).floatValue() * 100);          // Расчитываем прогресс в процентах
-                            publishProgress("Загрузка файла на сервер... " + progress + "%");                                           // Оповещение через Status TextView
+                            publishProgress(1, progress);                                                                               // Оповещение через Status TextView
                         }
                     });
 
@@ -362,9 +385,21 @@ public class ShareActivity extends AppCompatActivity {
 
         @Override
         protected  void onProgressUpdate(Object... objects){
-            // Выводим прогресс в Status TextView
-            String text = (String) objects[0];      // Преобразуем первый объект в String
-            statusTextView.setText(text);           // Выводим его в Status TextView
+            switch ((int) objects[0]){
+                case 0:
+                    // Выводим прогресс в Status TextView
+                    String text = (String) objects[1];      // Преобразуем первый объект в String
+                    statusTextView.setText(text);           // Выводим его в Status TextView
+                    break;
+
+                case 1:
+                    if(statusProgressBar.getVisibility() == View.INVISIBLE)
+                        // Если ProgressBar невидимый, делаем его видимым
+                        statusProgressBar.setVisibility(View.VISIBLE);
+                    int progress = (int) objects[1];
+                    statusProgressBar.setProgress(progress);
+                    break;
+            }
         }
 
         @Override
@@ -377,10 +412,17 @@ public class ShareActivity extends AppCompatActivity {
                 subjectSpinner.setEnabled(true);                                                   // Включаем выбор Предмета
                 dateButton.setEnabled(true);                                                       // Включаем кнопку Выбрать Дату Работы
                 shareButton.setEnabled(true);                                                      // Включаем кнопку Отправить
-                Toast.makeText(getApplicationContext(),
-                        "Во время загрузки произошла ошибка.\nПовторите попытку.",
-                        Toast.LENGTH_LONG).show();                                                  // Выводим сообщение
-                statusTextView.setText((String) o);                                                 // Выводим ошибку в Status TextView
+                // Выводим сообщение
+                if(Build.VERSION.SDK_INT >= 25)
+                    Snackbar.make(shareButton,
+                            "Во время загрузки произошла ошибка. Повторите попытку.",
+                            Snackbar.LENGTH_LONG).show();
+                else
+                    Toast.makeText(getApplicationContext(),
+                            "Во время загрузки произошла ошибка. Повторите попытку.",
+                            Toast.LENGTH_LONG).show();
+                statusTextView.setText(o.toString());                                                 // Выводим ошибку в Status TextView
+                statusProgressBar.setVisibility(View.INVISIBLE);                                      // Скрываем ProgressBar
             }
             else{
                 // Иначе выводим сообщение и зыкрываем Activity

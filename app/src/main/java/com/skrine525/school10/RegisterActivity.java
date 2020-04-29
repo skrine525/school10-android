@@ -2,6 +2,7 @@ package com.skrine525.school10;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +11,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.snackbar.Snackbar;
 
 public class RegisterActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
@@ -51,15 +54,27 @@ public class RegisterActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(userNameEditText.getText().toString().equals(""))
+                if(userNameEditText.getText().toString().equals("")) {
                     // Если Имя не указано, то выводим сообщение
-                    Toast.makeText(getApplicationContext(), "Укажите имя!", Toast.LENGTH_SHORT).show();
-                else if (userSurnameEditText.getText().toString().equals(""))
+                    if(Build.VERSION.SDK_INT >= 25)
+                        Snackbar.make(saveButton, "Укажите имя!", Snackbar.LENGTH_SHORT).show();
+                    else
+                        Toast.makeText(getApplicationContext(), "Укажите имя!", Toast.LENGTH_SHORT).show();
+                }
+                else if (userSurnameEditText.getText().toString().equals("")) {
                     // Если Фамилия не указана, то выводим сообщение
-                    Toast.makeText(getApplicationContext(), "Укажите фамилию!", Toast.LENGTH_SHORT).show();
-                else if (userClassSpinner.getSelectedItemId() == 0)
+                    if(Build.VERSION.SDK_INT >= 25)
+                        Snackbar.make(saveButton, "Укажите фамилию!", Snackbar.LENGTH_SHORT).show();
+                    else
+                        Toast.makeText(getApplicationContext(), "Укажите фамилию!", Toast.LENGTH_SHORT).show();
+                }
+                else if (userClassSpinner.getSelectedItemId() == 0) {
                     // Если Класс не указан, то выводим сообщение
-                    Toast.makeText(getApplicationContext(), "Выберите класс!", Toast.LENGTH_SHORT).show();
+                    if(Build.VERSION.SDK_INT >= 25)
+                        Snackbar.make(saveButton, "Выберите класс!", Snackbar.LENGTH_SHORT).show();
+                    else
+                        Toast.makeText(getApplicationContext(), "Выберите класс!", Toast.LENGTH_SHORT).show();
+                }
                 else{
                     // Иначе сохраняем данные в SharedPreferences
                     Editor editor = sharedPreferences.edit();
@@ -78,7 +93,10 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                     else
                         // Иначе выводим сообщение
-                        Toast.makeText(getApplicationContext(), "Не удалось сохранить данные!", Toast.LENGTH_SHORT).show();
+                        if(Build.VERSION.SDK_INT >= 25)
+                            Snackbar.make(saveButton, "Не удалось сохранить данные!", Snackbar.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getApplicationContext(), "Не удалось сохранить данные!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

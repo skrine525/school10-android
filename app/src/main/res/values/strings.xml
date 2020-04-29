@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Школа №10</string>
+    <string name="app_name">СОШ №10</string>
     <string name="hint_name">Имя</string>
     <string name="hint_surname">Фамилия</string>
     <string name="hint_email">Email (Необязательно)</string>

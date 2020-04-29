@@ -13,12 +13,15 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -116,7 +119,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else if(resultCode == RESULT_CANCELED)
-            Toast.makeText(getApplicationContext(), "Вы не выбрали файл", Toast.LENGTH_SHORT).show();
+            if(Build.VERSION.SDK_INT >= 25)
+                Snackbar.make(sendButton, "Вы не выбрали файл", Snackbar.LENGTH_SHORT).show();
+            else
+                Toast.makeText(getApplicationContext(), "Вы не выбрали файл", Toast.LENGTH_SHORT).show();
     }
 
     // Класс для скачивания обновления с сервера
@@ -215,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(installIntent);                                                           // Запускаем Activity установки
             }
             else
-                // Инче выводим сообщение об ошибке
+                // Иначе выводим сообщение об ошибке
                 Toast.makeText(getApplicationContext(), "Не удалось скачать обновление!", Toast.LENGTH_SHORT).show();
         }
     }
@@ -268,8 +274,7 @@ public class MainActivity extends AppCompatActivity {
                     return;                                                     // Если ловим исключение, то просто выходим из метода
                 }
                 final String finalHref = href;                                  // Временная final переменная href
-
-                Toast.makeText(getApplicationContext(), "Обнаружена новая версия приложения", Toast.LENGTH_SHORT).show();           // Выводим сообщение об обновлении
+                
                 updateButton.setVisibility(View.VISIBLE);                                                                                // Делаем кнопку Обновить видимой
 
                 // Создаем AlertDialog обновления
@@ -304,9 +309,12 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View v) {
-                            builder.create().show();
+                        builder.create().show();
                     }
                 });
+
+                // Показываем AlertDialog обновления
+                builder.create().show();
             }
         }
     }
